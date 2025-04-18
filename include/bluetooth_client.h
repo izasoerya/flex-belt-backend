@@ -44,7 +44,7 @@ public:
                 bool isCold;
                 data.getData(heater, isCold);
 
-                Serial.print("Received Actuator Data: ");
+                Serial.print("Parsed Actuator Data: ");
                 Serial.print("Heater: ");
                 Serial.print(heater);
                 Serial.print(", IsCold: ");
