@@ -1,5 +1,6 @@
 #include <Arduino.h>
-#include <mpu6050_FastAngles.h>
+#include <MPU9250_WE.h>
+#include <Wire.h>
 #include <TaskScheduler.h>
 
 #include "BluetoothSerial.h"
@@ -15,7 +16,7 @@ void calculateTaskCallback();
 
 BluetoothSerial SerialBT;
 BluetoothClient btClient(SerialBT);
-mpu6050_FastAngles mpu;
+MPU9250_WE mpu = MPU9250_WE();
 
 Task calculateTask(1000, TASK_FOREVER, &calculateTaskCallback);
 Scheduler scheduler;
@@ -31,6 +32,16 @@ void setup()
 	Serial.begin(115200);
 	Serial.println("Starting Bluetooth Serial...");
 
+	Wire.begin();
+	mpu.init();
+	Serial.println("Position you MPU9250 flat and don't move it - calibrating...");
+	delay(1000);
+	mpu.autoOffsets();
+	mpu.setSampleRateDivider(5);
+	mpu.setAccRange(MPU9250_ACC_RANGE_2G);
+	mpu.enableAccDLPF(true);
+	mpu.setAccDLPF(MPU9250_DLPF_6);
+	
 	scheduler.init();
 	scheduler.addTask(calculateTask);
 	calculateTask.enable();
@@ -47,11 +58,14 @@ void setup()
 	}
 }
 
+xyzFloat angles;
+
 void loop()
 {
 	while (btClient.isConnected())
 	{
 		btClient.receive(Serial);
+		angles = mpu.getAngles(); 
 		scheduler.execute();
 	}
 	Serial.println("Bluetooth device disconnected!");
@@ -60,12 +74,12 @@ void loop()
 
 Payload performCalculations()
 {
-	float angleX = mpu.getAngle('X');
-	float angleY = mpu.getAngle('Y');
-	float angleZ = mpu.getAngle('Z');
+	float angleX = angles.x;;
+	float angleY = angles.y;
+	float angleZ = angles.z;
 	uint16_t flex = analogRead(33);
 	String description = "Hail Kuru-Kuru";
 	String status = "safe";
-
+	Serial.println("Angle X: " + String(angleX) + ", Angle Y: " + String(angleY) + ", Angle Z: " + String(angleZ) + ", Flex: " + String(flex) + ", Description: " + description + ", Status: " + status);
 	return Payload(angleX, angleY, angleZ, flex, description, status);
 }
