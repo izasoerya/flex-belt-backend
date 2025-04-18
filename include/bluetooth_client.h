@@ -39,7 +39,7 @@ public:
             String receivedData = bluetooth.readStringUntil('\n');
             if (receivedData.length() > 0)
             {
-                Actuator data = Actuator().fromJSON(JSON.parse(receivedData));
+                Actuator data = Actuator::fromJSON(JSON.parse(receivedData));
                 uint16_t heater;
                 bool isCold;
                 data.getData(heater, isCold);

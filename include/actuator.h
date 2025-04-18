@@ -20,17 +20,11 @@ public:
         return actuatorData;
     }
 
-    Actuator fromJSON(const JSONVar &json)
+    static Actuator fromJSON(const JSONVar &json)
     {
-        if (json.hasOwnProperty("heater"))
-        {
-            heater = json["heater"];
-        }
-        if (json.hasOwnProperty("isCold"))
-        {
-            isCold = json["isCold"];
-        }
-        return *this;
+        uint16_t heater = json.hasOwnProperty("heater") ? (int)json["heater"] : 0;
+        bool isCold = json.hasOwnProperty("isCold") ? (bool)json["isCold"] : false;
+        return Actuator(heater, isCold);
     }
 
     void getData(uint16_t &v, bool &c)
