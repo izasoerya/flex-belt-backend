@@ -39,12 +39,23 @@ public:
             String receivedData = bluetooth.readStringUntil('\n');
             if (receivedData.length() > 0)
             {
-                Actuator data = Actuator().fromJSON(JSON.parse(receivedData));
+                Serial.print("Received Data: ");
+                Serial.println(receivedData);
+                
+                Serial.print("[DEBUG] Raw receivedData: ");
+                for (int i = 0; i < receivedData.length(); i++) {
+                  Serial.print((int)receivedData[i]); Serial.print(" ");
+                }
+                Serial.println();
+                JSONVar parsed = JSON.parse(receivedData);
+                Actuator data;
+                data.fromJSON(parsed);
+
                 uint16_t heater;
                 bool isCold;
                 data.getData(heater, isCold);
 
-                Serial.print("Received Actuator Data: ");
+                Serial.print("Parsed Actuator Data: ");
                 Serial.print("Heater: ");
                 Serial.print(heater);
                 Serial.print(", IsCold: ");

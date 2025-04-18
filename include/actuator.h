@@ -17,21 +17,32 @@ public:
         actuatorData["heater"] = heater;
         actuatorData["isCold"] = isCold;
 
-        return actuatorData;
+         return actuatorData;
     }
 
     Actuator fromJSON(const JSONVar &json)
+{
+    if (json.hasOwnProperty("heater"))
     {
-        if (json.hasOwnProperty("heater"))
-        {
-            heater = json["heater"];
-        }
-        if (json.hasOwnProperty("isCold"))
-        {
-            isCold = json["isCold"];
-        }
-        return *this;
+        Serial.print("[DEBUG] JSON heater raw: ");
+        Serial.println(JSON.stringify(json["heater"]));
+        Serial.print("[DEBUG] As double: ");
+        Serial.println((double)json["heater"]);
+
+        heater = (uint16_t)(double)json["heater"];
     }
+
+    if (json.hasOwnProperty("isCold"))
+    {
+        Serial.print("[DEBUG] JSON isCold raw: ");
+        Serial.println(JSON.stringify(json["isCold"]));
+        
+        isCold = JSON.stringify(json["isCold"]) == "true";
+    }
+
+    return *this;
+}
+
 
     void getData(uint16_t &v, bool &c)
     {
