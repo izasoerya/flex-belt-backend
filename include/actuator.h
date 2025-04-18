@@ -20,11 +20,35 @@ public:
         return actuatorData;
     }
 
-    static Actuator fromJSON(const JSONVar &json)
+    Actuator fromJSON(const JSONVar &json)
     {
-        uint16_t heater = json.hasOwnProperty("heater") ? (int)json["heater"] : 0;
-        bool isCold = json.hasOwnProperty("isCold") ? (bool)json["isCold"] : false;
-        return Actuator(heater, isCold);
+        Serial.println(JSONVar().stringify(json)); // <== Add this to see the JSON data
+        if (json.hasOwnProperty("heater"))
+        {
+            heater = static_cast<int>(json["heater"]); // <== force cast
+        }
+        if (json.hasOwnProperty("isCold"))
+        {
+            isCold = static_cast<bool>(json["isCold"]);
+        }
+        return *this;
+    }
+
+    Actuator fromRawJson(const String &jsonStr)
+    {
+        int heaterStart = jsonStr.indexOf("\"heater\":") + 9;
+        int heaterEnd = jsonStr.indexOf(',', heaterStart);
+        String heaterValue = jsonStr.substring(heaterStart, heaterEnd);
+        heater = heaterValue.toInt();
+
+        int isColdStart = jsonStr.indexOf("\"isCold\":") + 9;
+        int isColdEnd = jsonStr.indexOf('}', isColdStart);
+        String isColdValue = jsonStr.substring(isColdStart, isColdEnd);
+        isColdValue.trim(); // clean up whitespace
+
+        isCold = (isColdValue == "true");
+
+        return *this;
     }
 
     void getData(uint16_t &v, bool &c)

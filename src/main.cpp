@@ -41,7 +41,7 @@ void setup()
 	mpu.setAccRange(MPU9250_ACC_RANGE_2G);
 	mpu.enableAccDLPF(true);
 	mpu.setAccDLPF(MPU9250_DLPF_6);
-	
+
 	scheduler.init();
 	scheduler.addTask(calculateTask);
 	calculateTask.enable();
@@ -65,7 +65,7 @@ void loop()
 	while (btClient.isConnected())
 	{
 		btClient.receive(Serial);
-		angles = mpu.getAngles(); 
+		angles = mpu.getAngles();
 		scheduler.execute();
 	}
 	Serial.println("Bluetooth device disconnected!");
@@ -74,7 +74,8 @@ void loop()
 
 Payload performCalculations()
 {
-	float angleX = angles.x;;
+	float angleX = angles.x;
+	;
 	float angleY = angles.y;
 	float angleZ = angles.z;
 	uint16_t flex = analogRead(33);
