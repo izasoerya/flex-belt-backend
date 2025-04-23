@@ -6,6 +6,7 @@
 #include "BluetoothSerial.h"
 #include "bluetooth_client.h"
 #include "payload.h"
+#include "dss.h"
 
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
@@ -18,13 +19,18 @@ BluetoothSerial SerialBT;
 BluetoothClient btClient(SerialBT);
 MPU9250_WE mpu = MPU9250_WE();
 
-Task calculateTask(1000, TASK_FOREVER, &calculateTaskCallback);
+Task calculateTask(3000, TASK_FOREVER, &calculateTaskCallback);
 Scheduler scheduler;
 
 void calculateTaskCallback()
 {
 	Payload payload = performCalculations();
-	btClient.send(payload);
+	DSS dss(payload);
+	String desc = dss.generateDescription();
+	String status = dss.generateStatus();
+	Payload finalPayload = payload.copyWith(-1, -1, -1, 0, desc, status);
+
+	btClient.send(finalPayload);
 }
 
 void setup()
@@ -75,12 +81,9 @@ void loop()
 Payload performCalculations()
 {
 	float angleX = angles.x;
-	;
 	float angleY = angles.y;
 	float angleZ = angles.z;
 	uint16_t flex = analogRead(33);
-	String description = "Hail Kuru-Kuru";
-	String status = "safe";
-	Serial.println("Angle X: " + String(angleX) + ", Angle Y: " + String(angleY) + ", Angle Z: " + String(angleZ) + ", Flex: " + String(flex) + ", Description: " + description + ", Status: " + status);
-	return Payload(angleX, angleY, angleZ, flex, description, status);
+	Serial.println("Angle X: " + String(angleX) + ", Angle Y: " + String(angleY) + ", Angle Z: " + String(angleZ) + ", Flex: " + String(flex));
+	return Payload(angleX, angleY, angleZ, flex);
 }
