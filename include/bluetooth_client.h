@@ -3,6 +3,7 @@
 #include "BluetoothSerial.h"
 #include "payload.h"
 #include "actuator.h"
+#include "motor.h"
 
 class BluetoothClient
 {
@@ -32,7 +33,7 @@ public:
         }
     };
 
-    void receive(HardwareSerial &Serial)
+    void receive(HardwareSerial &Serial, Motor &motor)
     {
         if (bluetooth.available())
         {
@@ -45,6 +46,8 @@ public:
                 uint16_t heater;
                 bool isCold;
                 act.getData(heater, isCold);
+                motor.setConfig(isCold, heater);
+                motor.setSpeed();
 
                 Serial.print("Parsed manually -> Heater: ");
                 Serial.print(heater);

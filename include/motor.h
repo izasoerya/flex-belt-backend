@@ -1,0 +1,55 @@
+#pragma once
+
+#include <Arduino.h>
+
+#define LPWM 2
+#define RPWM 4
+#define REN 5
+#define LEN 16
+
+#define MAX_SPEED 255
+
+class Motor
+{
+private:
+    bool isCold = true;
+    byte heater = 0;
+
+public:
+    Motor() {};
+
+    void Motor::begin()
+    {
+        pinMode(LPWM, OUTPUT);
+        pinMode(RPWM, OUTPUT);
+        pinMode(REN, OUTPUT);
+        pinMode(LEN, OUTPUT);
+
+        digitalWrite(REN, HIGH);
+        digitalWrite(LEN, HIGH);
+    };
+
+    void setConfig(bool isCold, byte heater)
+    {
+        this->isCold = isCold;
+        this->heater = heater;
+    };
+
+    void setSpeed()
+    {
+        if (isCold)
+        {
+            uint16_t heaterSpeed = map(heater, 0, 100, 0, MAX_SPEED);
+            analogWrite(LPWM, 0);
+            analogWrite(RPWM, heaterSpeed);
+            return;
+        }
+
+        if (!isCold)
+        {
+            uint16_t heaterSpeed = map(heater, 0, 100, 0, MAX_SPEED);
+            analogWrite(LPWM, heaterSpeed);
+            analogWrite(RPWM, 0);
+        }
+    };
+};

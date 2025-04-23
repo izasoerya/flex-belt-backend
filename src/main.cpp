@@ -7,6 +7,7 @@
 #include "BluetoothSerial.h"
 #include "bluetooth_client.h"
 #include "payload.h"
+#include "motor.h"
 #include "dss.h"
 
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
@@ -20,6 +21,7 @@ BluetoothSerial SerialBT;
 BluetoothClient btClient(SerialBT);
 MPU9250_WE mpu = MPU9250_WE();
 RotaryEncoder *encoder = nullptr;
+Motor motor;
 Task calculateTask(3000, TASK_FOREVER, &calculateTaskCallback);
 Scheduler scheduler;
 
@@ -63,6 +65,9 @@ void setup()
 	attachInterrupt(digitalPinToInterrupt(12), checkPosition, CHANGE);
 	attachInterrupt(digitalPinToInterrupt(13), checkPosition, CHANGE);
 
+	motor.begin();
+	motor.setConfig(true, 0); // cold, heater 0
+
 	scheduler.init();
 	scheduler.addTask(calculateTask);
 	calculateTask.enable();
@@ -85,7 +90,7 @@ void loop()
 {
 	while (btClient.isConnected())
 	{
-		btClient.receive(Serial);
+		btClient.receive(Serial, motor);
 		angles = mpu.getAngles();
 		scheduler.execute();
 	}
