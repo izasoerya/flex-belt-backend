@@ -2,6 +2,7 @@
 #include <MPU9250_WE.h>
 #include <Wire.h>
 #include <TaskScheduler.h>
+#include <RotaryEncoder.h>
 
 #include "BluetoothSerial.h"
 #include "bluetooth_client.h"
@@ -18,9 +19,19 @@ void calculateTaskCallback();
 BluetoothSerial SerialBT;
 BluetoothClient btClient(SerialBT);
 MPU9250_WE mpu = MPU9250_WE();
-
+RotaryEncoder *encoder = nullptr;
 Task calculateTask(3000, TASK_FOREVER, &calculateTaskCallback);
 Scheduler scheduler;
+
+IRAM_ATTR void checkPosition()
+{
+	encoder->tick(); // just call tick() to check the state.
+}
+
+float getBatteryLevel(uint16_t analogVal)
+{
+	return (analogVal / 4095.0) * 3.3 * 2;
+}
 
 void calculateTaskCallback()
 {
@@ -28,7 +39,7 @@ void calculateTaskCallback()
 	DSS dss(payload);
 	String desc = dss.generateDescription();
 	String status = dss.generateStatus();
-	Payload finalPayload = payload.copyWith(-1, -1, -1, 0, desc, status);
+	Payload finalPayload = payload.copyWith(-1, -1, -1, 0, desc, status, 0, 0);
 
 	btClient.send(finalPayload);
 }
@@ -47,6 +58,10 @@ void setup()
 	mpu.setAccRange(MPU9250_ACC_RANGE_2G);
 	mpu.enableAccDLPF(true);
 	mpu.setAccDLPF(MPU9250_DLPF_6);
+
+	encoder = new RotaryEncoder(12, 13, RotaryEncoder::LatchMode::TWO03);
+	attachInterrupt(digitalPinToInterrupt(12), checkPosition, CHANGE);
+	attachInterrupt(digitalPinToInterrupt(13), checkPosition, CHANGE);
 
 	scheduler.init();
 	scheduler.addTask(calculateTask);
@@ -80,10 +95,13 @@ void loop()
 
 Payload performCalculations()
 {
+	encoder->tick(); // just call tick() to check the state.
 	float angleX = angles.x;
 	float angleY = angles.y;
 	float angleZ = angles.z;
 	uint16_t flex = analogRead(33);
-	Serial.println("Angle X: " + String(angleX) + ", Angle Y: " + String(angleY) + ", Angle Z: " + String(angleZ) + ", Flex: " + String(flex));
-	return Payload(angleX, angleY, angleZ, flex);
+	int encoderPos = encoder->getPosition();
+	float batteryLevel = getBatteryLevel(analogRead(35));
+
+	return Payload(angleX, angleY, angleZ, flex, "", "", encoderPos, batteryLevel);
 }
