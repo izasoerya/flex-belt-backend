@@ -28,4 +28,17 @@ public:
 
         return payloadData;
     }
+
+    Payload copyWith(
+        float x = -1, float y = -1, float z = -1, uint16_t f = 0,
+        String d = "", String s = "")
+    {
+        return Payload(
+            x != -1 ? x : angleX,
+            y != -1 ? y : angleY,
+            z != -1 ? z : angleZ,
+            f != 0 ? f : flex,
+            d != "" ? d : description,
+            s != "" ? s : status);
+    }
 };
