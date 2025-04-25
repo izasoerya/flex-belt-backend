@@ -2,10 +2,10 @@
 
 #include <Arduino.h>
 
-#define LPWM 2
-#define RPWM 4
+#define LPWM 18
+#define RPWM 19
 #define REN 5
-#define LEN 16
+#define LEN 17
 
 #define MAX_SPEED 255
 
@@ -18,7 +18,7 @@ private:
 public:
     Motor() {};
 
-    void Motor::begin()
+    void begin()
     {
         pinMode(LPWM, OUTPUT);
         pinMode(RPWM, OUTPUT);
