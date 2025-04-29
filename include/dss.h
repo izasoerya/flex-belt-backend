@@ -20,6 +20,7 @@ public:
     String generateStatus()
     {
         // TODO: Implement the logic to generate a status based on the payload data
-        return "safe / caution / danger";
+        digitalWrite(13, HIGH);
+        return "dangerous"; // safe, caution, dangerous
     }
 };
