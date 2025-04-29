@@ -1,55 +1,69 @@
 #pragma once
 
 #include <Arduino.h>
-
-#define LPWM 18
-#define RPWM 19
-#define REN 5
-#define LEN 17
+#include "BTS7960.h"
 
 #define MAX_SPEED 255
 
 class Motor
 {
 private:
+    const uint8_t LPWM = 18;
+    const uint8_t RPWM = 19;
+    const uint8_t REN = 5;
+    const uint8_t LEN = 17;
+
+    BTS7960 *motorController = nullptr;
+
     bool isCold = true;
     byte heater = 0;
 
 public:
-    Motor() {};
+    Motor() {}
 
     void begin()
     {
-        pinMode(LPWM, OUTPUT);
-        pinMode(RPWM, OUTPUT);
-        pinMode(REN, OUTPUT);
-        pinMode(LEN, OUTPUT);
-
-        digitalWrite(REN, HIGH);
-        digitalWrite(LEN, HIGH);
-    };
+        motorController = new BTS7960(LEN, REN, LPWM, RPWM);
+        motorController->Enable();
+    }
 
     void setConfig(bool isCold, byte heater)
     {
         this->isCold = isCold;
         this->heater = heater;
-    };
+    }
 
     void setSpeed()
     {
+        if (!motorController)
+            return;
+
+        uint16_t heaterSpeed = map(heater, 0, 100, 0, MAX_SPEED);
+
         if (isCold)
         {
-            uint16_t heaterSpeed = map(heater, 0, 100, 0, MAX_SPEED);
-            analogWrite(LPWM, 0);
-            analogWrite(RPWM, heaterSpeed);
-            return;
+            motorController->TurnRight(heaterSpeed);
+        }
+        else
+        {
+            motorController->TurnLeft(heaterSpeed);
         }
 
-        if (!isCold)
+        delayMicroseconds(100);
+    }
+
+    void stop()
+    {
+        if (motorController)
         {
-            uint16_t heaterSpeed = map(heater, 0, 100, 0, MAX_SPEED);
-            analogWrite(LPWM, heaterSpeed);
-            analogWrite(RPWM, 0);
+            motorController->Stop();
+            motorController->Disable();
         }
-    };
+    }
+
+    ~Motor()
+    {
+        stop();
+        delete motorController;
+    }
 };
