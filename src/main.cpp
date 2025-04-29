@@ -27,29 +27,26 @@ Scheduler scheduler;
 
 IRAM_ATTR void checkPosition()
 {
-	encoder->tick(); // just call tick() to check the state.
+	encoder->tick();
+}
+
+IRAM_ATTR void resetPosition()
+{
+	encoder->setPosition(0);
 }
 
 float getBatteryLevel(uint16_t analogVal)
 {
-	return (analogVal / 4095.0) * 3.3 * 2;
-}
-
-void calculateTaskCallback()
-{
-	Payload payload = performCalculations();
-	DSS dss(payload);
-	String desc = dss.generateDescription();
-	String status = dss.generateStatus();
-	Payload finalPayload = payload.copyWith(-1, -1, -1, 0, desc, status, 0, 0);
-
-	btClient.send(finalPayload);
+	int voltage;
+	voltage = map(analogVal, 1790, 2559, 0, 100); // map to mV
+	return voltage;
 }
 
 void setup()
 {
 	Serial.begin(115200);
 	Serial.println("Starting Bluetooth Serial...");
+	pinMode(13, OUTPUT);
 
 	Wire.begin();
 	mpu.init();
@@ -61,9 +58,10 @@ void setup()
 	mpu.enableAccDLPF(true);
 	mpu.setAccDLPF(MPU9250_DLPF_6);
 
-	encoder = new RotaryEncoder(12, 13, RotaryEncoder::LatchMode::TWO03);
-	attachInterrupt(digitalPinToInterrupt(12), checkPosition, CHANGE);
-	attachInterrupt(digitalPinToInterrupt(13), checkPosition, CHANGE);
+	encoder = new RotaryEncoder(25, 27, RotaryEncoder::LatchMode::TWO03);
+	attachInterrupt(digitalPinToInterrupt(25), checkPosition, CHANGE);
+	attachInterrupt(digitalPinToInterrupt(27), checkPosition, CHANGE);
+	attachInterrupt(digitalPinToInterrupt(26), resetPosition, RISING);
 
 	motor.begin();
 	motor.setConfig(true, 0); // cold, heater 0
@@ -92,10 +90,25 @@ void loop()
 	{
 		btClient.receive(Serial, motor);
 		angles = mpu.getAngles();
+		if (angles.x > 5 && angles.x < 15)
+		{
+			// DUDUK SAKIT, VIBRATOR ON
+		}
 		scheduler.execute();
 	}
 	Serial.println("Bluetooth device disconnected!");
 	delay(1000);
+}
+
+void calculateTaskCallback()
+{
+	Payload payload = performCalculations();
+	DSS dss(payload);
+	String desc = dss.generateDescription();
+	String status = dss.generateStatus();
+	Payload finalPayload = payload.copyWith(-1, -1, -1, 0, desc, status, 0, 0);
+
+	btClient.send(finalPayload);
 }
 
 Payload performCalculations()
@@ -106,7 +119,53 @@ Payload performCalculations()
 	float angleZ = angles.z;
 	uint16_t flex = analogRead(33);
 	int encoderPos = encoder->getPosition();
-	float batteryLevel = getBatteryLevel(analogRead(35));
+	float batteryLevel = getBatteryLevel(analogRead(34));
+	Serial.print("analog: ");
+	Serial.println(analogRead(34));
 
 	return Payload(angleX, angleY, angleZ, flex, "", "", encoderPos, batteryLevel);
 }
+
+// #include <Arduino.h>
+
+// void setup()
+// {
+// 	Serial.begin(115200);
+// 	Serial.println("Hello, World!");
+// 	pinMode(5, OUTPUT);
+// 	pinMode(17, OUTPUT);
+// 	pinMode(18, OUTPUT);
+// 	pinMode(19, OUTPUT);
+// 	digitalWrite(5, HIGH);
+// 	digitalWrite(17, HIGH);
+// }
+
+// void loop()
+// {
+// 	for (int i = 0; i < 128; i++)
+// 	{
+// 		analogWrite(18, i);
+// 		delayMicroseconds(100);
+// 		analogWrite(19, 0);
+// 		delay(50);
+// 	}
+// 	for (int i = 128; i > 0; i--)
+// 	{
+// 		analogWrite(18, i);
+// 		delayMicroseconds(100);
+// 		analogWrite(19, 0);
+// 		delay(50);
+// 	}
+// 	// for (int i = 0; i < 128; i++)
+// 	// {
+// 	// 	analogWrite(18, 0);
+// 	// 	analogWrite(19, i);
+// 	// 	delay(50);
+// 	// }
+// 	// for (int i = 128; i > 0; i--)
+// 	// {
+// 	// 	analogWrite(18, 0);
+// 	// 	analogWrite(19, i);
+// 	// 	delay(50);
+// 	// }
+// }
