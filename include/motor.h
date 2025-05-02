@@ -41,15 +41,15 @@ public:
         {
             uint16_t heaterSpeed = map(heater, 0, 100, 0, MAX_SPEED);
             analogWrite(LPWM, 0);
-            digitalWrite(LPWM,LOW);            
+            digitalWrite(LPWM, LOW);
             analogWrite(RPWM, heaterSpeed);
         }
         if (!isCold)
         {
             uint16_t heaterSpeed = map(heater, 0, 100, 0, MAX_SPEED);
             analogWrite(RPWM, 0);
-            digitalWrite(RPWM,LOW);
+            digitalWrite(RPWM, LOW);
             analogWrite(LPWM, heaterSpeed);
-        }
-    }
+        }
+    }
 };
