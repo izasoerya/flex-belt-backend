@@ -13,14 +13,33 @@ public:
 
     String generateDescription()
     {
-        // TODO: Implement the logic to generate a description based on the payload data
-        return "fill this later!";
+        if (payload.getAngleY() <= -70)
+            return "Indikasi Lordosis";
+        else if (payload.getAngleY() < -60 && payload.getAngleY() > -70)
+            return "Indikasi Kyphosis";
+        else if (payload.getAngleX() > 15)
+            return "Indikasi Skoliosis Kiri";
+        else
+            return "Normal";
     }
 
     String generateStatus()
     {
-        // TODO: Implement the logic to generate a status based on the payload data
-        digitalWrite(13, HIGH);
-        return "dangerous"; // safe, caution, dangerous
+        // Generate the description
+        String description = generateDescription();
+
+        // Determine the status based on the description and angleX
+        if (description == "Normal")
+        {
+            return "safe";
+        }
+        else if (payload.getAngleX() < 45)
+        {
+            return "caution";
+        }
+        else
+        {
+            return "dangerous";
+        }
     }
 };

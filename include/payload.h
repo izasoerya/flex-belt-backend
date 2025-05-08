@@ -47,4 +47,13 @@ public:
             e != 0 ? e : encoder,
             b != 0 ? b : battery);
     }
+
+    float getAngleX() const { return angleX; }
+    float getAngleY() const { return angleY; }
+    float getAngleZ() const { return angleZ; }
+    uint16_t getFlex() const { return flex; }
+    String getDescription() const { return description; }
+    String getStatus() const { return status; }
+    int getEncoder() const { return encoder; }
+    float getBattery() const { return battery; }
 };

@@ -83,6 +83,7 @@ void setup()
 }
 
 xyzFloat angles;
+long lastTime = 0;
 
 void loop()
 {
@@ -90,11 +91,9 @@ void loop()
 	{
 		btClient.receive(Serial, motor);
 		angles = mpu.getAngles();
-		if (angles.x > 5 && angles.x < 15)
-		{
-			// DUDUK SAKIT, VIBRATOR ON
-		}
-		scheduler.execute();
+		if (angles.x < 45)
+
+			scheduler.execute();
 	}
 	Serial.println("Bluetooth device disconnected!");
 	delay(1000);
@@ -103,6 +102,21 @@ void loop()
 void calculateTaskCallback()
 {
 	Payload payload = performCalculations();
+	if (payload.getAngleY() < 45)
+	{
+		if (lastTime != 0)
+			lastTime = millis();
+		if ((millis() - lastTime) > 9000 && (millis() - lastTime) < 24000)
+		{
+			digitalWrite(13, HIGH);
+		}
+	}
+	else
+	{
+		lastTime = 0;
+		digitalWrite(13, LOW);
+	}
+
 	DSS dss(payload);
 	String desc = dss.generateDescription();
 	String status = dss.generateStatus();
@@ -120,8 +134,6 @@ Payload performCalculations()
 	uint16_t flex = analogRead(33);
 	int encoderPos = encoder->getPosition();
 	float batteryLevel = getBatteryLevel(analogRead(34));
-	Serial.print("analog: ");
-	Serial.println(analogRead(34));
 
 	return Payload(angleX, angleY, angleZ, flex, "", "", encoderPos, batteryLevel);
 }
