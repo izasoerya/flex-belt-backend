@@ -89,7 +89,7 @@ void loop()
 {
 	while (btClient.isConnected())
 	{
-		btClient.receive(Serial, motor);
+		btClient.receive(Serial, motor, *encoder);
 		angles = mpu.getAngles();
 		if (angles.x < 45)
 
@@ -132,7 +132,7 @@ Payload performCalculations()
 	float angleY = angles.y;
 	float angleZ = angles.z;
 	uint16_t flex = analogRead(33);
-	int encoderPos = encoder->getPosition();
+	int encoderPos = (encoder->getPosition() / 1.48F);
 	float batteryLevel = getBatteryLevel(analogRead(34));
 
 	return Payload(angleX, angleY, angleZ, flex, "", "", encoderPos, batteryLevel);

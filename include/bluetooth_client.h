@@ -4,6 +4,7 @@
 #include "payload.h"
 #include "actuator.h"
 #include "motor.h"
+#include <RotaryEncoder.h>
 
 class BluetoothClient
 {
@@ -33,7 +34,7 @@ public:
         }
     };
 
-    void receive(HardwareSerial &Serial, Motor &motor)
+    void receive(HardwareSerial &Serial, Motor &motor, RotaryEncoder &encoder)
     {
         if (bluetooth.available())
         {
@@ -45,14 +46,23 @@ public:
 
                 uint16_t heater;
                 bool isCold;
-                act.getData(heater, isCold);
-                motor.setConfig(isCold, heater);
-                motor.setSpeed();
+                bool resetEncoder = false;
+                act.getData(heater, isCold, resetEncoder);
+                if (resetEncoder)
+                {
+                    encoder.setPosition(0);
+                    return;
+                }
+                else
+                {
+                    motor.setConfig(isCold, heater);
+                    motor.setSpeed();
 
-                Serial.print("Parsed manually -> Heater: ");
-                Serial.print(heater);
-                Serial.print(", IsCold: ");
-                Serial.println(isCold);
+                    Serial.print("Parsed manually -> Heater: ");
+                    Serial.print(heater);
+                    Serial.print(", IsCold: ");
+                    Serial.println(isCold);
+                }
             }
         }
     };
