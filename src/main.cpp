@@ -92,9 +92,7 @@ void loop()
 	{
 		btClient.receive(Serial, motor, *encoder, peltierIsOn);
 		angles = mpu.getAngles();
-		if (angles.x < 45)
-
-			scheduler.execute();
+		scheduler.execute();
 	}
 	Serial.println("Bluetooth device disconnected!");
 	delay(1000);
