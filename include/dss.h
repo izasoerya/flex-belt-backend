@@ -13,14 +13,34 @@ public:
 
     String generateDescription()
     {
-        if (payload.getAngleY() <= -70)
-            return "Indikasi Lordosis";
-        else if (payload.getAngleY() < -60 && payload.getAngleY() > -70)
-            return "Indikasi Kyphosis";
-        else if (payload.getAngleX() > 15)
-            return "Indikasi Skoliosis Kiri";
-        else
+        float x = payload.getAngleX();
+        float y = payload.getAngleY();
+        uint16_t flex = payload.getFlex();
+
+        if (x > 10 && y > -50 && y < -30 && flex > 580)
+        {
             return "Normal";
+        }
+        else if (x < 8 && y > -30 && flex > 600)
+        {
+            return "Skoliosis Kiri";
+        }
+        else if (x < 8 && y < -50 && flex < 580)
+        {
+            return "Skoliosis Kanan";
+        }
+        else if (x > 12 && y > -50 && y < -30 && flex < 580)
+        {
+            return "Kifosis";
+        }
+        else if (x < 5 && y > 30 && flex > 600)
+        {
+            return "Lordosis";
+        }
+        else
+        {
+            return "Normal";
+        }
     }
 
     String generateStatus()

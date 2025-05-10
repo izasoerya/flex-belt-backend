@@ -34,7 +34,7 @@ public:
         }
     };
 
-    void receive(HardwareSerial &Serial, Motor &motor, RotaryEncoder &encoder)
+    void receive(HardwareSerial &Serial, Motor &motor, RotaryEncoder &encoder, bool &peltierIsOn)
     {
         if (bluetooth.available())
         {
@@ -57,11 +57,21 @@ public:
                 {
                     motor.setConfig(isCold, heater);
                     motor.setSpeed();
+                    if (heater > 0)
+                    {
+                        peltierIsOn = true;
+                    }
+                    else
+                    {
+                        peltierIsOn = false;
+                    }
 
                     Serial.print("Parsed manually -> Heater: ");
                     Serial.print(heater);
                     Serial.print(", IsCold: ");
                     Serial.println(isCold);
+                    Serial.print("button: ");
+                    Serial.println(resetEncoder ? "true" : "false");
                 }
             }
         }

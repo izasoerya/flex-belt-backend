@@ -24,6 +24,7 @@ RotaryEncoder *encoder = nullptr;
 Motor motor;
 Task calculateTask(3000, TASK_FOREVER, &calculateTaskCallback);
 Scheduler scheduler;
+bool peltierIsOn = false;
 
 IRAM_ATTR void checkPosition()
 {
@@ -89,7 +90,7 @@ void loop()
 {
 	while (btClient.isConnected())
 	{
-		btClient.receive(Serial, motor, *encoder);
+		btClient.receive(Serial, motor, *encoder, peltierIsOn);
 		angles = mpu.getAngles();
 		if (angles.x < 45)
 
@@ -125,6 +126,7 @@ void calculateTaskCallback()
 	btClient.send(finalPayload);
 }
 
+float batteryLevel = 0;
 Payload performCalculations()
 {
 	encoder->tick(); // just call tick() to check the state.
@@ -133,7 +135,8 @@ Payload performCalculations()
 	float angleZ = angles.z;
 	uint16_t flex = analogRead(33);
 	int encoderPos = (encoder->getPosition() / 1.48F);
-	float batteryLevel = getBatteryLevel(analogRead(34));
+	if (!peltierIsOn)
+		batteryLevel = getBatteryLevel(analogRead(34));
 
 	return Payload(angleX, angleY, angleZ, flex, "", "", encoderPos, batteryLevel);
 }
