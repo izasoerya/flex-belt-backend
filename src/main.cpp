@@ -103,7 +103,7 @@ void calculateTaskCallback()
 	Payload payload = performCalculations();
 	if (payload.getAngleY() < 45)
 	{
-		if (lastTime != 0)
+		if (lastTime == 0)
 			lastTime = millis();
 		if ((millis() - lastTime) > 9000 && (millis() - lastTime) < 24000)
 		{
