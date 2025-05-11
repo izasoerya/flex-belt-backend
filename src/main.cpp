@@ -71,7 +71,7 @@ void setup()
 	scheduler.addTask(calculateTask);
 	calculateTask.enable();
 
-	while (!btClient.begin("ESP32test")) // Bluetooth device name
+	while (!btClient.begin("SpineGuard")) // Bluetooth device name
 	{
 		Serial.println("Bluetooth device failed!");
 		delay(1000);
@@ -101,13 +101,15 @@ void loop()
 void calculateTaskCallback()
 {
 	Payload payload = performCalculations();
-	if (payload.getAngleY() < 45)
+	if (payload.getAngleZ() < 45)
 	{
 		if (lastTime == 0)
 			lastTime = millis();
 		if ((millis() - lastTime) > 9000 && (millis() - lastTime) < 24000)
 		{
 			digitalWrite(13, HIGH);
+		} else {
+			digitalWrite(13, LOW);
 		}
 	}
 	else

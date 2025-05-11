@@ -55,10 +55,12 @@ public:
         isColdValue.trim(); // clean up whitespace
         isCold = (isColdValue == "true");
 
-        int resetEncoderStart = jsonStr.indexOf("\"resetEncoder\":") + 9;
+        int resetEncoderStart = jsonStr.indexOf("\"resetEncoder\":") + 15;
         int resetEncoderEnd = jsonStr.indexOf('}', resetEncoderStart);
         String resetEncoderValue = jsonStr.substring(resetEncoderStart, resetEncoderEnd);
         resetEncoderValue.trim(); // clean up whitespace
+        Serial.println(resetEncoderValue);
+        resetEncoder = (resetEncoderValue == "true");
 
         return *this;
     }
@@ -67,6 +69,6 @@ public:
     {
         v = heater;
         c = isCold;
-        r = false; // Assuming resetEncoder is not used in this context
+        r = resetEncoder; // Assuming resetEncoder is not used in this context
     }
 };
